@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard - My ATS</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+    th { background: #f5f5f5; }
+    input { margin-bottom: 20px; width: 300px; padding: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Admin Dashboard</h1>
+  <p>Enter your Formspree API key (it won’t be stored):</p>
+  <input type="password" id="apiKey" placeholder="Paste API key here">
+  <button onclick="loadApplications()">Load Applications</button>
+
+  <table id="dataTable" style="display:none;">
+    <thead>
+      <tr><th>Name</th><th>Email</th><th>Resume</th><th>Date</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function loadApplications() {
+      const apiKey = document.getElementById("apiKey").value;
+      if (!apiKey) return alert("Please enter your API key");
+
+      const resp = await fetch("https://api.formspree.io/forms", {
+        headers: { "Authorization": "Bearer " + apiKey }
+      });
+      const forms = await resp.json();
+      if (!forms || forms.length === 0) {
+        alert("No forms found! Make sure your API key is correct.");
+        return;
+      }
+
+      // use the first form found
+      const formId = forms[0].id;
+      const submissions = await fetch(`https://api.formspree.io/forms/${formId}/submissions`, {
+        headers: { "Authorization": "Bearer " + apiKey }
+      }).then(r => r.json());
+
+      const table = document.getElementById("dataTable");
+      const tbody = table.querySelector("tbody");
+      tbody.innerHTML = "";
+
+      for (const sub of submissions.results) {
+        const tr = document.createElement("tr");
+        const name = sub.data.name || "(no name)";
+        const email = sub.data._replyto || "(no email)";
+        const resume = sub.data.resume || "(no resume)";
+        const date = new Date(sub.created_at).toLocaleString();
+        tr.innerHTML = `<td>${name}</td><td>${email}</td><td>${resume}</td><td>${date}</td>`;
+        tbody.appendChild(tr);
+      }
+
+      table.style.display = "table";
+    }
+  </script>
+</body>
+</html>
