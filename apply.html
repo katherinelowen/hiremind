@@ -1,5 +1,5 @@
 <form
-  action="YOUR_NEW_EXEC_URL_HERE"
+  action="PASTE_YOUR_NEW_EXEC_URL_HERE"
   method="POST"
   class="mx-auto"
   style="max-width: 600px;"
@@ -28,7 +28,7 @@
 </form>
 
 <script>
-  // Autofill job title from URL
+  // Autofill job title from ?job=Frontend%20Developer
   const params = new URLSearchParams(window.location.search);
   const job = params.get("job");
   if (job) document.getElementById("jobTitle").value = job;
